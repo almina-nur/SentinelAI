@@ -1,5 +1,11 @@
-fastapi
-uvicorn
-pandas
-sqlalchemy
-psycopg2-binary
+fastapi==0.110.0
+uvicorn==0.29.0
+pandas==2.2.1
+sqlalchemy==2.0.28
+psycopg2-binary==2.9.9
+streamlit==1.32.2
+torch==2.2.1
+scikit-learn==1.4.1
+transformers==4.38.2
+faiss-cpu==1.7.4
+sentence-transformers==2.5.1

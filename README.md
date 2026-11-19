@@ -1,107 +1,85 @@
 
 # SentinelAI - AI-Powered Cybersecurity Analyst
 
-Güvenlik sistemlerinden gelen logları analiz ederek şüpheli davranışları tespit eden ve güvenlik analistlerine olay incelemesinde yardımcı olan yapay zeka destekli bir platform.
+Güvenlik operasyon merkezlerinde (SOC) analistlerin günde binlerce log arasında kaybolmasını engellemek ve yanlış alarm (False Positive) yorgunluğunu azaltmak için geliştirilmiş, yapay zeka destekli bir log analiz ve tehdit tespit platformu prototipi.
 
-## Projenin Amacı ve Çözdüğü Problem
+## Projenin Mühendislik Hikayesi (Neden Yaptım?)
 
-Kurum sistemlerinde her gün binlerce hatta milyonlarca log oluşmaktadır. Bu logların manuel incelenmesi imkansızdır. SentinelAI, aşağıdaki türdeki anomalileri otomatik tespit etmek ve analistlere sunmak için geliştirilmiştir:
+Güvenlik sistemlerinde "her şeyi yapay zekaya bırakmak" büyük bir risktir (halüsinasyon, yanlış alarmlar). Bu projede **Hibrit (Kural + ML)** mimarisi benimsenmiştir:
+- **ML Katmanı:** Anomali tespiti için Isolation Forest ve PyTorch kullanılmıştır.
+- **Kural Katmanı:** Tehdit sınıflandırması (MITRE ATT&CK) deterministik Python kuralları ile yapılır. Böylece LLM'in ürettiği metinlerin sistemin aksiyonlarını (örneğin IP bloklama) etkilemesi engellenmiştir.
+- **AI & RAG:** Analiste rapor sunarken LLM'den faydalanılır ancak aksiyon önerileri (SOC Playbook) sabit kurallara dayanır.
 
-- Aynı IP adresinden çok sayıda başarısız giriş yapılması (Brute Force)
-- Olağan dışı saatlerde oturum açılması
-- Normal kullanıcı davranışından sapmalar
-- Yetkisiz erişim girişimleri
+## Öne Çıkan Başarılar ve Metrikler
 
-**Temel Prensiplerimiz:**
-- Yapay zekanın her şüpheli olayı kesin saldırı olarak etiketlememesi.
-- Yanlış pozitiflerin (False Positive) ölçülmesi ve minimize edilmesi.
-- Aksiyon kaynaklı halüsinasyon riskini ortadan kaldırmak için deterministik (kural tabanlı) doğrulama kullanılması.
+- **Yanlış Alarm Optimizasyonu:** Başlangıçta "Gece girişi" kuralı 261 yanlış alarm üretirken, kullanıcı davranış analitiği (baseline) eklenerek bu sayı **12'ye** düşürüldü.
+- **Model Performansı:** Test veri setinde (2100 log) **Precision: 0.893**, **Recall: 1.000** ve **F1-Score: 0.943** elde edildi.
 
-## Geliştirilen Modüller
+## Mimari ve Veri Akışı
 
-| Modül | Açıklama | Durum |
-| :--- | :--- | :--- |
-| Log Collector & Parser | Log dosyalarını sisteme alma ve standartlaştırma | Tamamlandı |
-| Anomaly Detection | Olağan dışı davranışları belirleme (Isolation Forest & PyTorch) | Tamamlandı |
-| Threat Classification | Güvenlik olaylarını sınıflandırma (Kural Motoru) | Tamamlandı |
-| MITRE ATT&CK Mapping | Tespitleri ilgili saldırı teknikleriyle ilişkilendirme | Tamamlandı |
-| AI Assistant | Güvenlik olaylarını doğal dille açıklama (RAG & LLM) | Tamamlandı |
-| Incident Dashboard | Olayları önem derecesine göre gösterme (Streamlit) | Tamamlandı |
+```mermaid
+graph TD
+    A[Güvenlik Logları] --> B(Log Parser & Özellik Mühendisliği)
+    B --> C{Anomali Tespiti}
+    
+    C -->|Isolation Forest / PyTorch| D[Anomali Skoru]
+    C -->|Normal Davranış| E[Normal Loglar]
+    
+    D --> F[Kural Motoru & Tehdit Sınıflandırma]
+    F -->|Brute Force| G[MITRE ATT&CK Mapping - T1110]
+    F -->|Anormal Giriş| H[MITRE ATT&CK Mapping - T1078]
+    F -->|Bilinmeyen| I[MITRE ATT&CK Mapping - TBD]
+    
+    G --> J(RAG & LLM Asistanı)
+    H --> J
+    I --> J
+    
+    J --> K[Hibrit Raporlama & SOC Playbook]
+    K --> L[Streamlit Dashboard]
+    K --> M[FastAPI Backend / PostgreSQL]
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style L fill:#bbf,stroke:#333,stroke-width:2px
+    style M fill:#bbf,stroke:#333,stroke-width:2px
 
-## Kullanılan Teknolojiler
-
-- **Veri İşleme:** Python, Pandas, PyArrow (Parquet)
-- **Makine Öğrenmesi:** Scikit-learn (Isolation Forest), PyTorch (Autoencoder)
-- **Yapay Zeka & NLP:** HuggingFace Transformers (Qwen), Sentence-Transformers, FAISS (RAG)
-- **Backend & Veritabanı:** FastAPI, PostgreSQL, SQLAlchemy
-- **Frontend & Arayüz:** Streamlit
-- **Altyapı & Dağıtım:** Docker, Google Colab (Geliştirme ortamı)
-
-## Değerlendirme ve Mühendislik Çözümleri
-
-Proje geliştirilirken karşılaşılan temel zorluklar ve uygulanan mühendislik çözümleri:
-
-1. **Yanlış Alarm (False Positive) Optimizasyonu:**
-   - *Başlangıç Durumu:* "Gece girişi" kuralı 261 normal logu yanlışlıkla saldırı olarak işaretledi (Precision: 0.27).
-   - *Çözüm:* Kullanıcı geçmiş davranışını (baseline) kontrol eden bir kural yazıldı. Precision skoru 0.89'a yükseltildi, analistin önüne giden gereksiz alarm sayısı 12'ye düşürüldü.
-
-2. **LLM Halüsinasyonu Yönetimi:**
-   - *Başlangıç Durumu:* Küçük dil modeli (Qwen 0.5B) Türkçe raporlarda bağlam dışı aksiyonlar üretti.
-   - *Çözüm:* Hibrit yaklaşım benimsendi. Aksiyonlar (IP bloklama, şifre değiştirme) deterministik olarak Python `if-else` yapılarıyla koda gömüldü. LLM sadece metin özetleme ve çıkarım aşamasında kullanıldı.
-
-3. **Veri Hattı (Data Pipeline) Tutarlılığı:**
-   - *Başlangıç Durumu:* Model çıktılarının (örneğin `anomaly` sütunu) notebook'lar arası aktarımda kaybolması.
-   - *Çözüm:* Her adımın çıktısı `logs_with_anomaly.parquet` ve `logs_classified.parquet` gibi anlamlı isimlerle diske kaydedildi. Veri sızıntısını (data leakage) önlemek için `fit_transform` yerine sadece `transform` kullanıldı.
-
- ### Değerlendirme Sonuçları (Sentetik Veri Seti)
-- Veri Seti: 2.100 log (2.000 Normal, 100 Brute Force Saldırısı)
-- **Recall:** 1.000 (Hiçbir saldırı kaçırılmadı)
-- **Precision:** 0.893
-- **F1-Score:** 0.943
-- **False Positive (Yanlış Alarm) Oranı:** %0.6 (Sadece 12 yanlış alarm)
-
-## Proje Yapısı
+## Klasör Yapısı
 
 ```text
 SentinelAI/
-├── data/
-│   ├── raw/                  # Ham loglar
-│   ├── processed/            # İşlenmiş veriler (Parquet)
-│   └── mitre/                # MITRE ATT&CK referansları
-├── models/                   # Eğitilmiş modeller
-├── notebooks/                # Geliştirme aşamaları
-│   ├── 01_log_parser.ipynb
-│   ├── 02_threat_classification.ipynb
-│   ├── 03_ai_assistant_rag.ipynb
-│   └── 04_full_stack_production.ipynb
-├── reports/                  # Değerlendirme raporları
-├── app.py                    # Streamlit Dashboard
-├── api.py                    # FastAPI Backend
-├── Dockerfile                # Docker konfigürasyonu
-├── requirements.txt          # Python bağımlılıkları
+├── notebooks/          # 5 aşamalı geliştirme süreci (Parser, Anomaly, RAG, Dashboard, Full-Stack)
+├── reports/            # Model değerlendirme ve kod inceleme (code review) raporları
+├── app.py              # Streamlit Dashboard Arayüzü
+├── api.py              # FastAPI Backend Servisi
+├── Dockerfile          # Konteyner yapılandırması
+├── requirements.txt    # Bağımlılıklar
 └── README.md
 ```
 
 ## Kurulum ve Çalıştırma
 
-Projeyi kendi ortamınızda çalıştırmak için:
+Bu proje modüler bir prototip olarak geliştirilmiştir. Farklı bileşenleri çalıştırmak için:
 
 1. Depoyu klonlayın:
    ```bash
-   git clone https://github.com/kullanici_adiniz/SentinelAI.git
+   git clone https://github.com/almina-nur/SentinelAI.git
    cd SentinelAI
    ```
+
 2. Gerekli kütüphaneleri yükleyin:
    ```bash
    pip install -r requirements.txt
    ```
-3. Streamlit uygulamasını başlatın:
+
+3. **Dashboard'u başlatmak için:**
    ```bash
    streamlit run app.py
    ```
 
-## Lisans
+4. **FastAPI Backend'i başlatmak için (PostgreSQL gerektirir):**
+   ```bash
+   uvicorn api:app --reload
+   ```
 
-Bu proje MIT lisansı altında lisanslanmıştır.
-```
+*(Not: Docker entegrasyonu henüz tam olarak tamamlanmamış olup, konteyner yapılandırması gelecek aşamada `docker-compose` ile birleştirilecektir.)*
+
 

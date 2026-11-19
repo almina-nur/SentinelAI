@@ -1,3 +1,4 @@
+
 # SentinelAI - AI-Powered Cybersecurity Analyst
 
 Güvenlik operasyon merkezlerinde (SOC) analistlerin günde binlerce log arasında kaybolmasını engellemek ve yanlış alarm (False Positive) yorgunluğunu azaltmak için geliştirilmiş, yapay zeka destekli bir log analiz ve tehdit tespit platformu prototipi.
@@ -40,3 +41,44 @@ graph TD
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style L fill:#bbf,stroke:#333,stroke-width:2px
     style M fill:#bbf,stroke:#333,stroke-width:2px
+```
+
+## Klasör Yapısı
+
+```text
+SentinelAI/
+├── notebooks/          # 5 aşamalı geliştirme süreci (Parser, Anomaly, RAG, Dashboard, Full-Stack)
+├── reports/            # Model değerlendirme ve kod inceleme (code review) raporları
+├── app.py              # Streamlit Dashboard Arayüzü
+├── api.py              # FastAPI Backend Servisi
+├── Dockerfile          # Konteyner yapılandırması
+├── requirements.txt    # Bağımlılıklar
+└── README.md
+```
+
+## Kurulum ve Çalıştırma
+
+Bu proje modüler bir prototip olarak geliştirilmiştir. Farklı bileşenleri çalıştırmak için:
+
+1. Depoyu klonlayın:
+   ```bash
+   git clone https://github.com/almina-nur/SentinelAI.git
+   cd SentinelAI
+   ```
+
+2. Gerekli kütüphaneleri yükleyin:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Dashboard'u başlatmak için:**
+   ```bash
+   streamlit run app.py
+   ```
+
+4. **FastAPI Backend'i başlatmak için (PostgreSQL gerektirir):**
+   ```bash
+   uvicorn api:app --reload
+   ```
+
+*(Not: Docker entegrasyonu henüz tam olarak tamamlanmamış olup, konteyner yapılandırması gelecek aşamada `docker-compose` ile birleştirilecektir.)*

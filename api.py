@@ -5,7 +5,8 @@ from sqlalchemy import create_engine
 import pandas as pd
 
 app = FastAPI(title="SentinelAI API")
-engine = create_engine("postgresql://sentinel:sentinel123@localhost:5432/sentinel_db")
+DB_PASS = os.getenv("DB_PASSWORD", "sentinel123")
+engine = create_engine(f"postgresql://sentinel:{DB_PASS}@localhost:5432/sentinel_db")
 
 @app.get("/")
 def home():

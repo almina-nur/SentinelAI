@@ -1,5 +1,6 @@
 
 from fastapi import FastAPI
+import os
 from sqlalchemy import create_engine
 import pandas as pd
 

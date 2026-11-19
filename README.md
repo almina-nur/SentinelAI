@@ -18,30 +18,25 @@ Güvenlik sistemlerinde "her şeyi yapay zekaya bırakmak" büyük bir risktir (
 ## Mimari ve Veri Akışı
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1f2937', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#4b5563', 'lineColor': '#9ca3af', 'secondaryColor': '#374151', 'tertiaryColor': '#111827'}}}%%
-graph TD
-    A["Güvenlik Logları"] --> B["Log Parser & Özellik Mühendisliği"]
-    B --> C{"Anomali Tespiti"}
+%%{init: {'flowchart': {'curve': 'linear', 'nodeSpacing': 20, 'rankSpacing': 30}, 'theme': 'base', 'themeVariables': { 'primaryColor': '#1f2937', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#4b5563', 'lineColor': '#9ca3af'}}}%%
+graph LR
+    A["Loglar"] --> B["Parser"]
+    B --> C{"Anomali"}
     
-    C -->|Isolation Forest / PyTorch| D["Anomali Skoru"]
-    C -->|Normal Davranış| E["Normal Loglar"]
+    C -->|ML| D["Skor"]
+    C -->|Normal| E["Temiz"]
     
-    D --> F["Kural Motoru & Sınıflandırma"]
-    F -->|Brute Force| G["MITRE T1110"]
-    F -->|Anormal Giriş| H["MITRE T1078"]
-    F -->|Bilinmeyen| I["MITRE TBD"]
+    D --> F["Kural Motoru"]
+    F --> G["MITRE"]
     
-    G --> J("RAG & LLM Asistanı")
-    H --> J
-    I --> J
+    G --> J("RAG/LLM")
+    J --> K["Rapor"]
+    K --> L["Dashboard"]
+    K --> M["FastAPI"]
     
-    J --> K["Hibrit Raporlama"]
-    K --> L["Streamlit Dashboard"]
-    K --> M["FastAPI & PostgreSQL"]
-    
-    classDef default fill:#1f2937,stroke:#4b5563,stroke-width:2px,color:#ffffff,font-size:14px;
-    classDef input fill:#064e3b,stroke:#059669,stroke-width:2px,color:#ffffff,font-size:14px;
-    classDef output fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff,font-size:14px;
+    classDef default fill:#1f2937,stroke:#4b5563,stroke-width:1px,color:#fff,font-size:12px;
+    classDef input fill:#064e3b,stroke:#059669,stroke-width:1px,color:#fff,font-size:12px;
+    classDef output fill:#1e3a8a,stroke:#3b82f6,stroke-width:1px,color:#fff,font-size:12px;
     
     class A input;
     class L,M output;

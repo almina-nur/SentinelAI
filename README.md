@@ -15,7 +15,7 @@ Kurum sistemlerinde her gün binlerce hatta milyonlarca log oluşmaktadır. Bu l
 **Temel Prensiplerimiz:**
 - Yapay zekanın her şüpheli olayı kesin saldırı olarak etiketlememesi.
 - Yanlış pozitiflerin (False Positive) ölçülmesi ve minimize edilmesi.
-- Halüsinasyon riskini sıfırlamak için kural tabanlı doğrulama kullanılması.
+- Aksiyon kaynaklı halüsinasyon riskini ortadan kaldırmak için deterministik (kural tabanlı) doğrulama kullanılması.
 
 ## Geliştirilen Modüller
 
@@ -52,6 +52,13 @@ Proje geliştirilirken karşılaşılan temel zorluklar ve uygulanan mühendisli
 3. **Veri Hattı (Data Pipeline) Tutarlılığı:**
    - *Başlangıç Durumu:* Model çıktılarının (örneğin `anomaly` sütunu) notebook'lar arası aktarımda kaybolması.
    - *Çözüm:* Her adımın çıktısı `logs_with_anomaly.parquet` ve `logs_classified.parquet` gibi anlamlı isimlerle diske kaydedildi. Veri sızıntısını (data leakage) önlemek için `fit_transform` yerine sadece `transform` kullanıldı.
+
+ ### Değerlendirme Sonuçları (Sentetik Veri Seti)
+- Veri Seti: 2.100 log (2.000 Normal, 100 Brute Force Saldırısı)
+- **Recall:** 1.000 (Hiçbir saldırı kaçırılmadı)
+- **Precision:** 0.893
+- **F1-Score:** 0.943
+- **False Positive (Yanlış Alarm) Oranı:** %0.6 (Sadece 12 yanlış alarm)
 
 ## Proje Yapısı
 

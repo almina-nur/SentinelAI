@@ -18,29 +18,33 @@ Güvenlik sistemlerinde "her şeyi yapay zekaya bırakmak" büyük bir risktir (
 ## Mimari ve Veri Akışı
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1f2937', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#4b5563', 'lineColor': '#9ca3af', 'secondaryColor': '#374151', 'tertiaryColor': '#111827'}}}%%
 graph TD
-    A[Güvenlik Logları] --> B(Log Parser & Özellik Mühendisliği)
-    B --> C{Anomali Tespiti}
+    A["Güvenlik Logları"] --> B["Log Parser & Özellik Mühendisliği"]
+    B --> C{"Anomali Tespiti"}
     
-    C -->|Isolation Forest / PyTorch| D[Anomali Skoru]
-    C -->|Normal Davranış| E[Normal Loglar]
+    C -->|Isolation Forest / PyTorch| D["Anomali Skoru"]
+    C -->|Normal Davranış| E["Normal Loglar"]
     
-    D --> F[Kural Motoru & Tehdit Sınıflandırma]
-    F -->|Brute Force| G[MITRE ATT&CK Mapping - T1110]
-    F -->|Anormal Giriş| H[MITRE ATT&CK Mapping - T1078]
-    F -->|Bilinmeyen| I[MITRE ATT&CK Mapping - TBD]
+    D --> F["Kural Motoru & Sınıflandırma"]
+    F -->|Brute Force| G["MITRE T1110"]
+    F -->|Anormal Giriş| H["MITRE T1078"]
+    F -->|Bilinmeyen| I["MITRE TBD"]
     
-    G --> J(RAG & LLM Asistanı)
+    G --> J("RAG & LLM Asistanı")
     H --> J
     I --> J
     
-    J --> K[Hibrit Raporlama & SOC Playbook]
-    K --> L[Streamlit Dashboard]
-    K --> M[FastAPI Backend / PostgreSQL]
+    J --> K["Hibrit Raporlama"]
+    K --> L["Streamlit Dashboard"]
+    K --> M["FastAPI & PostgreSQL"]
     
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style L fill:#bbf,stroke:#333,stroke-width:2px
-    style M fill:#bbf,stroke:#333,stroke-width:2px
+    classDef default fill:#1f2937,stroke:#4b5563,stroke-width:2px,color:#ffffff,font-size:14px;
+    classDef input fill:#064e3b,stroke:#059669,stroke-width:2px,color:#ffffff,font-size:14px;
+    classDef output fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff,font-size:14px;
+    
+    class A input;
+    class L,M output;
 ```
 
 ## Klasör Yapısı
